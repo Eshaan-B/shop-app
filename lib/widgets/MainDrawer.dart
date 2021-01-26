@@ -62,7 +62,7 @@ class MainDrawer extends StatelessWidget {
               size: 35,
             ),
             title: Text(
-              'User Products',
+              'Manage Products',
               style: TextStyle(
                 fontSize: 15,
               ),
