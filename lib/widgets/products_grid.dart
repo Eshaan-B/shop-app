@@ -15,7 +15,7 @@ class ProductsGrid extends StatelessWidget {
         (showOnlyFavs) ? productsData.favouriteItems : productsData.items;
     return GridView.builder(
       padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
-      itemCount: products.length,
+      itemCount: products.length == null ? 0 : products.length,
       itemBuilder: (context, i) {
         return ChangeNotifierProvider.value(
           value: products[i],
