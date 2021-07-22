@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../providers/product.dart';
 import '../providers/cart.dart';
 
+import 'dart:async';
+
 class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -27,14 +29,19 @@ class ProductItem extends StatelessWidget {
             backgroundColor: Colors.black87,
             leading: Consumer<Product>(
               builder: (ctx, product, child) => IconButton(
-                icon: Icon(
-                  (product.isFavourite)
-                      ? Icons.favorite
-                      : Icons.favorite_border,
-                ),
-                color: Theme.of(context).accentColor,
-                onPressed: () => product.toggleFavourite(),
-              ),
+                  icon: Icon(
+                    (product.isFavourite)
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                  ),
+                  color: Theme.of(context).accentColor,
+                  onPressed: () {
+                    product.toggleFavourite().catchError((err) {
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('An error occurred')));
+                    });
+                  }),
             ),
             trailing: IconButton(
                 icon: Icon(

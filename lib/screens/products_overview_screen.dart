@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+
 import 'CartScreen.dart';
 import '../widgets/badge.dart';
 import '../providers/cart.dart';
@@ -37,6 +39,19 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
       _isInit = false;
     }
     super.didChangeDependencies();
+  }
+  
+  Future<void> _refreshProducts(BuildContext ctx) async {
+    setState(() {
+      _isLoading=true;
+    });
+    try{
+      await Provider.of<Products>(context).fetchAndSetProducts();
+    } catch(e){
+      print(e);
+      //return showDialog(context: context, builder: (c)=>AlertDialog())
+    }
+
   }
 
   @override

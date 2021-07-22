@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/http_exception.dart';
 import './product.dart';
 
 class Products with ChangeNotifier {
@@ -12,7 +13,7 @@ class Products with ChangeNotifier {
       description: 'A red shirt - it is pretty red!',
       price: 29.99,
       imageUrl:
-          'https://cdn.pixabay.com/photo/2016/10/02/22/17/red-t-shirt-1710578_1280.jpg',
+      'https://cdn.pixabay.com/photo/2016/10/02/22/17/red-t-shirt-1710578_1280.jpg',
     ),
     //   Product(
     //     id: 'p2',
@@ -88,9 +89,24 @@ class Products with ChangeNotifier {
     return items.firstWhere((product) => id == product.id);
   }
 
-  void deleteProduct(String id) {
+  Future<void> deleteProduct(String id) async {
+    final url =
+        'https://shopapp-2417e-default-rtdb.firebaseio.com/products/$id.json';
+    final existingProductIndex =
+    _items.indexWhere((element) => element.id == id);
+    var existingProduct = _items[existingProductIndex];
+    print('index is $existingProductIndex');
     _items.removeWhere((element) => element.id == id);
     notifyListeners();
+
+    final response = await http.delete(url);
+    if (response.statusCode >= 400) {
+      _items.insert(existingProductIndex, existingProduct);
+      notifyListeners();
+      throw HttpException(message: "An error occurred");
+    } else {
+      existingProduct = null;
+    }
   }
 
   Future<void> add(Product product) async {
@@ -123,12 +139,23 @@ class Products with ChangeNotifier {
     }
   }
 
-  void updateProduct(Product newProduct) {
+  Future<void> updateProduct(Product newProduct) async {
     final prodIndex =
-        _items.indexWhere((element) => element.id == newProduct.id);
+    _items.indexWhere((element) => element.id == newProduct.id);
     if (prodIndex > 0) {
+      final url =
+          "https://shopapp-2417e-default-rtdb.firebaseio.com/products/${newProduct.id}.json";
+      await http.patch(url,
+          body: json.encode({
+            'description': newProduct.description,
+            'imageUrl': newProduct.imageUrl,
+            'price': newProduct.price,
+            'title': newProduct.title,
+          }));
       _items[prodIndex] = newProduct;
       notifyListeners();
+    } else {
+      print('Product not found');
     }
   }
 }
