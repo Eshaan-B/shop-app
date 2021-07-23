@@ -34,26 +34,14 @@ class CartScreen extends StatelessWidget {
                     label: Text(
                       '\$ ${cart.totalAmount.toStringAsFixed(2)}',
                       style: TextStyle(
-                          color: Theme
-                              .of(context)
+                          color: Theme.of(context)
                               .primaryTextTheme
                               .headline6
                               .color),
                     ),
-                    backgroundColor: Theme
-                        .of(context)
-                        .accentColor,
+                    backgroundColor: Theme.of(context).accentColor,
                   ),
-                  FlatButton(
-                      textColor: Theme
-                          .of(context)
-                          .primaryColor,
-                      onPressed: () {
-                        Provider.of<Orders>(context,listen: false).addOrder(cart.items.values.toList(), cart.totalAmount);
-                        cart.emptyCart();
-                      },
-                      child: Text('Place order'), 
-                  ),
+                  OrderButton(cart: cart),
                 ],
               ),
             ),
@@ -77,6 +65,31 @@ class CartScreen extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+}
+
+class OrderButton extends StatelessWidget {
+  const OrderButton({
+    Key key,
+    @required this.cart,
+  }) : super(key: key);
+
+  final Cart cart;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      textColor: Theme.of(context).primaryColor,
+      onPressed: (cart.totalAmount <= 0)
+          ? null
+          : () {
+              Provider.of<Orders>(context, listen: false)
+                  .addOrder(cart.items.values.toList(),
+                      cart.totalAmount);
+              cart.emptyCart();
+            },
+      child: Text('Place order'),
     );
   }
 }

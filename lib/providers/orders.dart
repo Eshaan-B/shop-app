@@ -19,6 +19,47 @@ class Orders with ChangeNotifier {
     return [..._orders];
   }
 
+  Future<void> fetchAndSetOrders() async {
+    const url = "https://shopapp-2417e-default-rtdb.firebaseio.com/orders.json";
+    try {
+      final response = await http.get(url);
+      print(json.decode(response.body));
+      final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      List<OrderItem> loadedOrders = [];
+      if (extractedData == null) {
+        _orders = [];
+        notifyListeners();
+        return;
+      }
+      extractedData.forEach((orderId, orderData) {
+        loadedOrders.add(
+          OrderItem(
+            id: orderId,
+            amount: orderData['amount'],
+            dateTime: DateTime.parse(orderData['timestamp']),
+            products: (orderData['products'] as List<dynamic>)
+                .map((product) {
+              return CartItem(
+                id: product['id'],
+                title: product['title'],
+                price: product['price'],
+                quantity: product['quantity'],
+              );
+            }).toList(),
+          ),
+        );
+      });
+
+      //_orders = loadedOrders.reversed.toList();
+      notifyListeners();
+    } catch (err) {
+      print("===========================");
+      print("ERROR IS--");
+      print(err);
+      throw err;
+    }
+  }
+
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
     DateTime timestamp = DateTime.now();
     const url = "https://shopapp-2417e-default-rtdb.firebaseio.com/orders.json";
@@ -48,6 +89,8 @@ class Orders with ChangeNotifier {
             products: cartProducts),
       );
       notifyListeners();
-    } catch (error) {}
+    } catch (error) {
+      throw error;
+    }
   }
 }

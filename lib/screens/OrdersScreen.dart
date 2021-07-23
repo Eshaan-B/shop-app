@@ -4,8 +4,44 @@ import '../providers/orders.dart' show Orders;
 import 'package:provider/provider.dart';
 import '../widgets/order_item.dart';
 
-class OrdersScreen extends StatelessWidget {
+class OrdersScreen extends StatefulWidget {
   static const routeName = '/orderScreen';
+
+  @override
+  _OrdersScreenState createState() => _OrdersScreenState();
+}
+
+class _OrdersScreenState extends State<OrdersScreen> {
+  bool _isLoading = false;
+  bool _isInit = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    if (!_isInit) {
+      _isInit=true;
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<Orders>(context, listen: false)
+          .fetchAndSetOrders()
+          .catchError((onError) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("An error occured")));
+      }).then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,11 +51,17 @@ class OrdersScreen extends StatelessWidget {
         title: Text('Your orders'),
       ),
       drawer: MainDrawer(),
-      body: ListView.builder(
-          itemCount: orderData.orders.length,
-          itemBuilder: (ctx, index) {
-            return OrderItem(orderData.orders[index]);
-          }),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : (orderData.orders.length == 0)
+              ? Center(
+                  child: Text("No orders yet!"),
+                )
+              : ListView.builder(
+                  itemCount: orderData.orders.length,
+                  itemBuilder: (ctx, index) {
+                    return OrderItem(orderData.orders[index]);
+                  }),
     );
   }
 }
