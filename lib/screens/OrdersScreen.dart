@@ -12,56 +12,46 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
-  bool _isLoading = false;
-  bool _isInit = false;
+  Future _ordersFuture;
+  Future _obtainOrdersFuture(){
+    return Provider.of<Orders>(context,listen: false).fetchAndSetOrders();
+  }
 
   @override
   void initState() {
     // TODO: implement initState
+    _ordersFuture=_obtainOrdersFuture();
     super.initState();
   }
 
   @override
-  void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
-    super.didChangeDependencies();
-    if (!_isInit) {
-      _isInit=true;
-      setState(() {
-        _isLoading = true;
-      });
-      Provider.of<Orders>(context, listen: false)
-          .fetchAndSetOrders()
-          .catchError((onError) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("An error occured")));
-      }).then((_) {
-        setState(() {
-          _isLoading = false;
-        });
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final orderData = Provider.of<Orders>(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Your orders'),
-      ),
-      drawer: MainDrawer(),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : (orderData.orders.length == 0)
-              ? Center(
-                  child: Text("No orders yet!"),
-                )
-              : ListView.builder(
-                  itemCount: orderData.orders.length,
-                  itemBuilder: (ctx, index) {
-                    return OrderItem(orderData.orders[index]);
-                  }),
-    );
+        appBar: AppBar(
+          title: Text('Your orders'),
+        ),
+        drawer: MainDrawer(),
+        body: FutureBuilder(
+          future: _ordersFuture,
+          builder: (ctx, dataSnapshot) {
+            if (dataSnapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else {
+              //if there's an error
+              if (dataSnapshot.error != null) {
+                return Center(
+                    child: Text("An error occurred. Please try again later"));
+              } else {
+                return Consumer<Orders>(
+                  builder: (ctx, orderData, child) => ListView.builder(
+                    itemCount: orderData.orders.length,
+                    itemBuilder: (ctx, index) =>
+                        OrderItem(orderData.orders[index]),
+                  ),
+                );
+              }
+            }
+          },
+        ));
   }
 }
