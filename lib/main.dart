@@ -9,6 +9,8 @@ import 'providers/orders.dart';
 import 'screens/OrdersScreen.dart';
 import 'screens/user_product_screen.dart';
 import 'screens/edit_product.dart';
+import 'screens/auth_screen.dart';
+import 'providers/auth.dart';
 
 void main() => runApp(MyApp());
 
@@ -30,6 +32,9 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          create: (ctx) => Auth(),
+        ),
+        ChangeNotifierProvider(
           create: (ctx) => Products(),
         ),
         ChangeNotifierProvider(
@@ -47,12 +52,13 @@ class MyApp extends StatelessWidget {
           fontFamily: 'Lato',
         ),
         routes: {
-          '/': (ctx) => ProductsOverviewScreen(),
+          '/': (ctx) => AuthScreen(),
+          ProductsOverviewScreen.routeName: (ctx) => ProductsOverviewScreen(),
           ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
           CartScreen.routeName: (ctx) => CartScreen(),
           OrdersScreen.routeName: (ctx) => OrdersScreen(),
           UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
-          EditProductScreen.routeName:(ctx)=>EditProductScreen(),
+          EditProductScreen.routeName: (ctx) => EditProductScreen(),
         },
       ),
     );

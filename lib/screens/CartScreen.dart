@@ -79,8 +79,7 @@ class OrderButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton(
-      textColor: Theme.of(context).primaryColor,
+    return TextButton(
       onPressed: (cart.totalAmount <= 0)
           ? null
           : () {
