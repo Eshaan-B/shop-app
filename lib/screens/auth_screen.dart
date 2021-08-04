@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart  ';
+import '../models/http_exception.dart';
 
 import '../providers/auth.dart';
 
@@ -102,6 +103,22 @@ class _AuthCardState extends State<AuthCard> {
   var _isLoading = false;
   final _passwordController = TextEditingController();
 
+  void _alert(String message) {
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: Text("An error occurred",style: TextStyle(fontWeight: FontWeight.bold),),
+              content: Text("Error code:\n${message}"),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Dismiss",style: TextStyle(fontSize: 15),))
+              ],
+            ));
+  }
+
   void _submit() async {
     print("submit() triggered");
     if (!_formKey.currentState.validate()) {
@@ -113,18 +130,21 @@ class _AuthCardState extends State<AuthCard> {
     setState(() {
       _isLoading = true;
     });
-    if (_authMode == AuthMode.Login) {
-      // Log user in
-    } else {
-      // Sign user up
-      print("Signup");
-      try {
+    try {
+      if (_authMode == AuthMode.Login) {
+        // Log user in
+        await Provider.of<Auth>(context, listen: false)
+            .signIn(_authData['email'], _authData['password']);
+      } else {
+        // Sign user up
+        print("Signup");
         await Provider.of<Auth>(context, listen: false)
             .signUp(_authData['email'], _authData['password']);
-      } catch (err) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Some error occured")));
       }
+    } on HttpException catch (err) {
+      _alert(err.toString());
+    } catch (err) {
+      _alert('Authentication failed, please try again later.');
     }
     setState(() {
       _isLoading = false;
